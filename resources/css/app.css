@@ -1,0 +1,66 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+[x-cloak] {
+    display: none !important;
+}
+
+@layer components {
+    .card {
+        @apply rounded-xl border border-slate-800 bg-slate-900;
+    }
+
+    .label {
+        @apply mb-1.5 block text-sm font-medium text-slate-300;
+    }
+
+    .input {
+        @apply block w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-500
+            focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/30 focus:outline-none disabled:opacity-50;
+    }
+
+    .btn {
+        @apply inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition
+            focus-visible:ring-2 focus-visible:ring-cyan-500/50 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50;
+    }
+
+    .btn-primary {
+        @apply bg-cyan-500 text-slate-950 hover:bg-cyan-400;
+    }
+
+    .btn-secondary {
+        @apply border border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700;
+    }
+
+    .btn-danger {
+        @apply border border-red-500/40 bg-red-500/10 text-red-300 hover:bg-red-500/20;
+    }
+
+    .btn-ghost {
+        @apply text-slate-400 hover:bg-slate-800 hover:text-white;
+    }
+
+    .btn-sm {
+        @apply px-2.5 py-1.5 text-xs;
+    }
+
+    .field-error {
+        @apply mt-1 text-xs text-red-400;
+    }
+
+    .table-head {
+        @apply px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-400 uppercase;
+    }
+
+    .table-cell {
+        @apply px-4 py-3 text-sm whitespace-nowrap;
+    }
+}

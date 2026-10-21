@@ -1,0 +1,14 @@
+# Overlay for running behind nginx-proxy with Let's Encrypt (external "proxy" network).
+services:
+  panel:
+    ports: !reset []
+    environment:
+      VIRTUAL_HOST: ${VIRTUAL_HOST:-web.rexlcloud.de}
+      VIRTUAL_PORT: 80
+      LETSENCRYPT_HOST: ${VIRTUAL_HOST:-web.rexlcloud.de}
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true
