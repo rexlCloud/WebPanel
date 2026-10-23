@@ -3,9 +3,19 @@
 
     <x-load-error :message="$loadError"/>
 
-    <div class="relative mb-4 max-w-md">
-        <x-icon name="search" class="pointer-events-none absolute top-2.5 left-3 size-4 text-slate-500"/>
-        <input type="search" wire:model.live.debounce.300ms="search" placeholder="Search by name, UUID or server" class="input pl-9" aria-label="Search players">
+    <div class="mb-4 flex flex-wrap items-start justify-between gap-4">
+        <div class="relative w-full max-w-md">
+            <x-icon name="search" class="pointer-events-none absolute top-2.5 left-3 size-4 text-slate-500"/>
+            <input type="search" wire:model.live.debounce.300ms="search" placeholder="Search online players by name, UUID or server" class="input pl-9" aria-label="Search players">
+        </div>
+        <form wire:submit="find" class="w-full max-w-sm">
+            <div class="flex gap-2">
+                <label for="player-lookup" class="sr-only">Find any player</label>
+                <input id="player-lookup" wire:model="lookup" type="text" maxlength="64" class="input" placeholder="Find any player, also offline">
+                <button type="submit" class="btn btn-secondary">Open</button>
+            </div>
+            @error('lookup') <p class="field-error">{{ $message }}</p> @enderror
+        </form>
     </div>
 
     @if ($players->isEmpty())
@@ -29,7 +39,7 @@
                             <div class="flex items-center gap-3">
                                 <img src="https://mc-heads.net/avatar/{{ $player['uuid'] }}/32" alt="" class="size-8 rounded" loading="lazy">
                                 <div>
-                                    <div class="font-medium text-white">{{ $player['name'] }}</div>
+                                    <a href="{{ route('players.show', $player['uuid']) }}" wire:navigate class="font-medium text-white hover:text-cyan-300">{{ $player['name'] }}</a>
                                     <div class="font-mono text-xs text-slate-500">{{ $player['uuid'] }}</div>
                                 </div>
                             </div>

@@ -20,6 +20,7 @@ class PagesTest extends TestCase
             'groups' => ['/groups', 'Lobby'],
             'group' => ['/groups/Lobby', 'Settings'],
             'players' => ['/players', 'Notch'],
+            'player' => ['/players/Notch', 'example:coins'],
             'wrappers' => ['/wrappers', 'Wrapper-1'],
             'modules' => ['/modules', 'SignModule.jar'],
             'server list' => ['/server-list', 'Maintenance MOTD'],
@@ -45,6 +46,44 @@ class PagesTest extends TestCase
         $this->loginAs();
 
         $this->get('/servers/Nope-1')->assertNotFound();
+    }
+
+    public function test_players_who_never_joined_are_404(): void
+    {
+        $this->fakeCloud([
+            self::API.'/players/Nobody' => Http::response(['error' => 'not_found', 'message' => 'Player Nobody never joined the network'], 404),
+        ]);
+        $this->loginAs();
+
+        $this->get('/players/Nobody')->assertNotFound();
+    }
+
+    public function test_player_data_is_shown_by_type(): void
+    {
+        $this->fakeCloud();
+        $this->loginAs();
+
+        $this->get('/players/069a79f4-44e9-4726-a5be-fca90e38aaf5')
+            ->assertOk()
+            ->assertSee('Online')
+            ->assertSee('Lobby-1')
+            ->assertSee('250')
+            ->assertSee('Dinnerbone')
+            ->assertSee('Only the plugin that stored it can read this')
+            ->assertSee('Add value');
+    }
+
+    public function test_player_data_is_read_only_without_manage_players(): void
+    {
+        $permissions = ['SEE_PLAYERS'];
+        $this->fakeCloud(permissions: $permissions);
+        $this->loginAs(permissions: $permissions);
+
+        $this->get('/players/Notch')
+            ->assertOk()
+            ->assertSee('example:coins')
+            ->assertDontSee('Add value')
+            ->assertDontSee('title="Remove"', false);
     }
 
     public function test_navigation_and_actions_follow_the_permissions(): void

@@ -6,6 +6,7 @@ use App\Livewire\Dashboard;
 use App\Livewire\GroupDetail;
 use App\Livewire\GroupList;
 use App\Livewire\Modules;
+use App\Livewire\PlayerDetail;
 use App\Livewire\Players;
 use App\Livewire\ServerDetail;
 use App\Livewire\ServerList;
@@ -27,6 +28,7 @@ Route::middleware('cloud.auth')->group(function () {
     Route::livewire('/groups', GroupList::class)->name('groups');
     Route::livewire('/groups/{name}', GroupDetail::class)->name('groups.show');
     Route::livewire('/players', Players::class)->name('players');
+    Route::livewire('/players/{player}', PlayerDetail::class)->name('players.show');
     Route::livewire('/wrappers', Wrappers::class)->name('wrappers');
     Route::livewire('/server-list', ServerListSettings::class)->name('server-list');
     Route::livewire('/templates', Templates::class)->name('templates');

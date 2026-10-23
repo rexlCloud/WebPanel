@@ -32,6 +32,23 @@ trait FakesCloud
     }
 
     /**
+     * The player page of Notch: online, with a number, a list and a value only its plugin can read.
+     */
+    protected function playerDetail(bool $online = true): array
+    {
+        return [
+            'uuid' => '069a79f4-44e9-4726-a5be-fca90e38aaf5', 'name' => 'Notch',
+            'first_login' => 1_750_000_000_000, 'last_login' => 1_760_000_000_000, 'online' => $online,
+            ...($online ? ['server' => 'Lobby-1', 'server_group' => 'Lobby', 'proxy' => 'Proxy-1', 'login' => 1_760_000_000_000] : []),
+            'data' => [
+                ['key' => 'example:coins', 'type' => 'int', 'value' => 250, 'readable' => true, 'editable' => true, 'size' => 81],
+                ['key' => 'example:friends', 'type' => 'list', 'value' => ['Jeb', 'Dinnerbone'], 'readable' => true, 'editable' => false, 'size' => 120],
+                ['key' => 'stats:bedwars', 'type' => 'com.example.Stats', 'value' => null, 'readable' => false, 'editable' => false, 'size' => 64],
+            ],
+        ];
+    }
+
+    /**
      * @param  array<string, mixed>  $overrides  extra or replacing fakes, keyed by URL pattern
      */
     protected function fakeCloud(array $overrides = [], ?array $permissions = null): void
@@ -95,7 +112,13 @@ World", 'color' => '#55ff55', 'bold' => true]],
                 'uuid' => '069a79f4-44e9-4726-a5be-fca90e38aaf5', 'name' => 'Notch', 'server' => 'Lobby-1',
                 'server_group' => 'Lobby', 'proxy' => 'Proxy-1', 'login' => 1_760_000_000_000,
             ]]),
-            self::API.'/players/*' => Http::response(['status' => 'ok']),
+            self::API.'/players/*' => fn ($request) => match (true) {
+                $request->method() === 'GET' => Http::response(['status' => 'ok', 'data' => $this->playerDetail()]),
+                $request->method() === 'PUT' => Http::response(['status' => 'ok', 'data' => [
+                    'key' => 'example:coins', 'type' => 'int', 'value' => 300, 'readable' => true, 'editable' => true, 'size' => 81,
+                ]]),
+                default => Http::response(['status' => 'ok']),
+            },
             self::API.'/wrappers' => Http::response([
                 ['name' => 'Wrapper-1', 'address' => '10.0.0.11', 'connected' => true, 'in_shutdown' => false,
                     'cpu_usage' => 0.4, 'used_memory' => 8_000_000_000, 'free_memory' => 8_000_000_000,

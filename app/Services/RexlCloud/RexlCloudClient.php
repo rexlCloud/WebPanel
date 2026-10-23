@@ -305,6 +305,31 @@ class RexlCloudClient
         $this->send('post', 'players/'.$this->segment($uuid).'/message', ['message' => $message]);
     }
 
+    /**
+     * A player who joined at least once, online or not, with their stored data.
+     *
+     * @param  string  $player  UUID or name
+     * @return array{uuid: string, name: string, first_login: int, last_login: int, online: bool, data: list<array{key: string, type: string, value: mixed, readable: bool, editable: bool, size: int}>}
+     */
+    public function player(string $player): array
+    {
+        return $this->send('get', 'players/'.$this->segment($player))['data'];
+    }
+
+    /**
+     * @param  string|null  $type  e.g. "int" or "string"; null keeps the type of the current value
+     */
+    public function setPlayerData(string $player, string $key, ?string $type, string $value): array
+    {
+        return $this->send('put', 'players/'.$this->segment($player).'/data/'.$this->segment($key),
+            array_filter(['type' => $type, 'value' => $value], fn ($v) => $v !== null))['data'];
+    }
+
+    public function removePlayerData(string $player, string $key): void
+    {
+        $this->send('delete', 'players/'.$this->segment($player).'/data/'.$this->segment($key));
+    }
+
     // Wrappers
 
     public function wrappers(): array

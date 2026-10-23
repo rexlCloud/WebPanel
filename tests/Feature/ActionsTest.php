@@ -6,6 +6,7 @@ use App\Livewire\Dashboard;
 use App\Livewire\GroupDetail;
 use App\Livewire\GroupList;
 use App\Livewire\Modules;
+use App\Livewire\PlayerDetail;
 use App\Livewire\Players;
 use App\Livewire\ServerDetail;
 use App\Livewire\ServerList;
@@ -273,6 +274,72 @@ class ActionsTest extends TestCase
 
         $this->assertApiCall('POST', "/players/{$uuid}/message", ['message' => '<green>Hi']);
         $this->assertApiCall('POST', "/players/{$uuid}/kick");
+    }
+
+    public function test_any_player_can_be_looked_up(): void
+    {
+        $this->fakeCloud([
+            self::API.'/players/Herobrine' => Http::response(['error' => 'not_found', 'message' => 'Player Herobrine never joined the network'], 404),
+        ]);
+
+        Livewire::test(Players::class)
+            ->call('find')
+            ->assertHasErrors('lookup')
+            ->set('lookup', 'Herobrine')
+            ->call('find')
+            ->assertHasErrors('lookup')
+            ->assertSee('No player Herobrine has joined the network.')
+            ->set('lookup', 'notch')
+            ->call('find')
+            ->assertRedirect(route('players.show', '069a79f4-44e9-4726-a5be-fca90e38aaf5'));
+    }
+
+    public function test_player_data_can_be_changed_added_and_removed(): void
+    {
+        $this->fakeCloud();
+        $uuid = '069a79f4-44e9-4726-a5be-fca90e38aaf5';
+
+        Livewire::test(PlayerDetail::class, ['player' => 'Notch'])
+            ->assertSet('uuid', $uuid)
+            ->call('edit', 'example:coins', 'int', 250)
+            ->assertSet('editing', true)
+            ->assertSet('existing', true)
+            ->assertSet('value', '250')
+            ->set('value', '300')
+            ->call('save')
+            ->assertHasNoErrors()
+            ->assertSet('editing', false)
+            ->call('add')
+            ->assertSet('key', '')
+            ->call('save')
+            ->assertHasErrors('key')
+            ->set('key', 'example:title')
+            ->set('type', 'nope')
+            ->call('save')
+            ->assertHasErrors('type')
+            ->set('type', 'boolean')
+            ->set('value', 'true')
+            ->call('save')
+            ->assertHasNoErrors()
+            ->call('remove', 'stats:bedwars');
+
+        $this->assertApiCall('PUT', "/players/{$uuid}/data/example%3Acoins", ['type' => 'int', 'value' => '300']);
+        $this->assertApiCall('PUT', "/players/{$uuid}/data/example%3Atitle", ['type' => 'boolean', 'value' => 'true']);
+        $this->assertApiCall('DELETE', "/players/{$uuid}/data/stats%3Abedwars");
+    }
+
+    public function test_player_data_cannot_be_changed_without_manage_players(): void
+    {
+        $this->loginAs(permissions: ['SEE_PLAYERS']);
+        $this->fakeCloud(permissions: ['SEE_PLAYERS']);
+
+        Livewire::test(PlayerDetail::class, ['player' => 'Notch'])
+            ->call('edit', 'example:coins', 'int', 250)
+            ->set('value', '9999')
+            ->call('save')
+            ->call('remove', 'example:coins');
+
+        Http::assertNotSent(fn (Request $request) => in_array($request->method(), ['PUT', 'DELETE'], true));
     }
 
     public function test_wrappers_can_be_registered_and_show_the_key_once(): void

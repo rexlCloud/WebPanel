@@ -2,6 +2,9 @@
 
 namespace App\Livewire;
 
+use App\Services\RexlCloud\ApiException;
+use App\Services\RexlCloud\UnauthenticatedException;
+use App\Support\CloudUser;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 
@@ -19,6 +22,26 @@ class Players extends CloudComponent
     public string $mode = 'message';
 
     public string $text = '';
+
+    /**
+     * Name or UUID of any player who joined once, online or not.
+     */
+    public string $lookup = '';
+
+    public function find(): void
+    {
+        $this->validate(['lookup' => 'required|string|max:64'], ['lookup.required' => 'Enter a name or UUID.']);
+        $query = trim($this->lookup);
+        try {
+            $player = $this->cloud()->player($query);
+            $this->redirectRoute('players.show', ['player' => $player['uuid']], navigate: true);
+        } catch (UnauthenticatedException) {
+            CloudUser::forget();
+            $this->redirectRoute('login');
+        } catch (ApiException $e) {
+            $this->addError('lookup', $e->status === 404 ? "No player {$query} has joined the network." : $e->getMessage());
+        }
+    }
 
     public function open(string $uuid, string $name, string $mode): void
     {
